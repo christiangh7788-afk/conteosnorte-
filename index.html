@@ -27,6 +27,10 @@
   .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
   .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--muted)}.chip b{color:var(--navy)}
   .date{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+  .savebar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:600}
+  .savebar.busy{background:#f8fafc;border-color:var(--line);color:var(--muted)}
+  .savebar.err{background:#fef2f2;border-color:#fecaca;color:var(--danger)}
+  .btn-confirm{background:#fff;border:1px solid var(--line);color:var(--navy);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
   .prog{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
   .prog .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
   .prog .track{height:8px;background:#e8eef6;border-radius:999px;overflow:hidden}.prog .fill{height:100%;background:var(--teal);width:0}
@@ -159,11 +163,22 @@ async function entrarZona(){
   finally{showLoad(false);}
 }
 function renderZona(){
-  const t=state.tiendas;let completas=0;
-  t.forEach(x=>{const e=estOf(x.eco);if(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI')completas++;});
+  const t=state.tiendas;let completas=0,matOk=0,vesOk=0;
+  t.forEach(x=>{
+    const e=estOf(x.eco);
+    if(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI')completas++;
+    if(e.mat_cic==='SI'&&e.mat_man==='SI')matOk++;
+    if(e.ves_cic==='SI'&&e.ves_man==='SI')vesOk++;
+  });
   const pct=t.length?Math.round(completas/t.length*100):0;
   let html='<div class="bar"><span class="chip">Zona <b>'+state.user.zona+'</b></span><span class="chip">'+fmtFecha(state.fecha)+'</span><button class="refresh" onclick="entrarZona()">&#8635; Actualizar</button></div>'
-    +'<div class="prog"><div class="row"><span>Tiendas completas (4/4 marcas)</span><b>'+completas+'/'+t.length+'</b></div><div class="track"><div class="fill" style="width:'+pct+'%"></div></div></div>';
+    +'<div id="saveStatus" class="savebar"><span id="saveStatusText">Todos tus conteos están guardados.</span><button class="btn-confirm" onclick="confirmarGuardado()">Confirmar guardado</button></div>'
+    +'<div class="metrics">'
+      +'<div class="metric"><div class="n">'+completas+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Tiendas cumplidas (4/4)</div></div>'
+      +'<div class="metric"><div class="n">'+matOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Matutino cumplido</div></div>'
+      +'<div class="metric"><div class="n">'+vesOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Vespertino cumplido</div></div>'
+      +'<div class="metric"><div class="n" style="font-size:16px">'+pct+'%</div><div class="l">Avance del día</div></div>'
+    +'</div>';
   if(!t.length){html+='<div class="empty">No hay tiendas activas en tu zona.</div>';$('content').innerHTML=html;return;}
   t.forEach(x=>{
     const e=estOf(x.eco);
@@ -174,6 +189,26 @@ function renderZona(){
   });
   $('content').innerHTML=html;
 }
+function setSaveStatus(kind){
+  const el=$('saveStatusText'); if(!el)return;
+  const bar=$('saveStatus');
+  if(kind==='saving'){el.textContent='Guardando...';bar.classList.remove('ok','err');bar.classList.add('busy');}
+  else if(kind==='ok'){el.textContent='Guardado correctamente · '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});bar.classList.remove('busy','err');bar.classList.add('ok');}
+  else if(kind==='err'){el.textContent='No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.';bar.classList.remove('busy','ok');bar.classList.add('err');}
+}
+async function confirmarGuardado(){
+  setSaveStatus('saving');
+  showLoad(true);
+  try{
+    await cargarEstado();
+    renderZona();
+    setSaveStatus('ok');
+  }catch(e){
+    setSaveStatus('err');
+  }finally{
+    showLoad(false);
+  }
+}
 function tgBtn(x,campo,val,label){
   const on=val==='SI';
   return '<button class="tg '+(on?'on':'')+'" onclick="toggle(\''+x.eco+'\',\''+campo+'\',this)" data-nom="'+x.nombre.replace(/"/g,'&quot;')+'" data-zona="'+x.zona+'">'+label+'<span class="t">'+(on?'✓ realizado':'pendiente')+'</span></button>';
@@ -183,12 +218,15 @@ async function toggle(eco,campo,btn){
   if(!state.estado[eco])state.estado[eco]={mat_cic:'NO',mat_man:'NO',ves_cic:'NO',ves_man:'NO'};
   state.estado[eco][campo]=nuevo;
   btn.classList.toggle('on',nuevo==='SI');btn.querySelector('.t').textContent=nuevo==='SI'?'✓ realizado':'pendiente';
+  setSaveStatus('saving');
   try{
     const r=await api({action:'marcar',fecha:state.fecha,eco,campo,valor:nuevo,usuario:state.user.nombre,nombre:btn.dataset.nom,zona:btn.dataset.zona});
     if(!r.ok)throw new Error(r.error||'No se pudo guardar');
     renderZona();
+    setSaveStatus('ok');
   }catch(e){
     state.estado[eco][campo]=nuevo==='SI'?'NO':'SI';
+    setSaveStatus('err');
     alert('No se guardó: '+e.message);renderZona();
   }
 }
@@ -220,14 +258,19 @@ function reporteHTML(){
     +'<div class="metric"><div class="n" style="font-size:16px">'+fmtFecha(state.fecha)+'</div><div class="l">Fecha del reporte</div></div></div>';
   const g=agruparPorZona();
   Object.keys(g).sort().forEach(zona=>{
-    const arr=g[zona];let m=0,v=0;
-    arr.forEach(x=>{const e=estOf(x.eco);if(cumplioTurno(e,'mat'))m++;if(cumplioTurno(e,'ves'))v++;});
+    const arr=g[zona];let m=0,v=0,c=0;
+    arr.forEach(x=>{
+      const e=estOf(x.eco);
+      if(cumplioTurno(e,'mat'))m++;
+      if(cumplioTurno(e,'ves'))v++;
+      if(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI')c++;
+    });
     const pm=arr.length?Math.round(m/arr.length*100):0,pv=arr.length?Math.round(v/arr.length*100):0;
     html+='<div class="zblock"><div class="zhead" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">'
-      +'<div><div class="zn">'+zona+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+arr.length+' tiendas</div></div>'
+      +'<div><div class="zn">'+zona+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+arr.length+' tiendas · '+c+'/'+arr.length+' cumplidas</div></div>'
       +'<div class="zbars"><div class="zbar"><div class="cap"><span>Mat</span><span>'+pm+'%</span></div><div class="track"><div class="fill" style="width:'+pm+'%;background:'+(pm===100?'var(--ok)':'var(--orange)')+'"></div></div></div>'
       +'<div class="zbar"><div class="cap"><span>Ves</span><span>'+pv+'%</span></div><div class="track"><div class="fill" style="width:'+pv+'%;background:'+(pv===100?'var(--ok)':'var(--orange)')+'"></div></div></div></div></div>'
-      +'<div><table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Mat</th><th>Ves Cíc</th><th>Ves Man</th><th>Ves</th></tr></thead><tbody>';
+      +'<div class="hidden"><table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Mat</th><th>Ves Cíc</th><th>Ves Man</th><th>Ves</th></tr></thead><tbody>';
     arr.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(x=>{
       const e=estOf(x.eco);
       const mk=vv=>vv==='SI'?'<span class="yes">✓</span>':'<span class="no">–</span>';
