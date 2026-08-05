@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conteos Cíclicos · Veracruz Norte</title>
+<style>
+  :root{--navy:#13294B;--navy2:#1e3a6b;--orange:#F47920;--teal:#1FA89B;--bg:#eef2f7;--card:#fff;--line:#dbe3ee;--muted:#64748b;--ok:#16a34a;--danger:#dc2626}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#0f172a}
+  .hidden{display:none!important}
+  .top{background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+  .top .brand{font-weight:700;font-size:15px;line-height:1.1}.top .sub{font-size:11px;opacity:.8}
+  .top .spacer{flex:1}.top .who{font-size:12px;text-align:right;opacity:.9;max-width:45%}
+  .btn-out{background:transparent;border:1px solid rgba(255,255,255,.5);color:#fff;padding:6px 10px;border-radius:8px;font-size:12px;cursor:pointer}
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .login{background:var(--card);border-radius:16px;box-shadow:0 10px 30px rgba(19,41,75,.15);width:100%;max-width:360px;overflow:hidden}
+  .login .head{background:var(--navy);color:#fff;padding:22px;text-align:center}
+  .login .head h1{margin:0;font-size:18px}.login .head p{margin:6px 0 0;font-size:12px;opacity:.85}
+  .login .body{padding:22px}
+  .login label{display:block;font-size:12px;color:var(--muted);margin:4px 0 8px;font-weight:600}
+  .login select{width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:#fff;color:#0f172a}
+  .login select:focus{outline:none;border-color:var(--navy2)}
+  .login button{width:100%;margin-top:18px;background:var(--orange);color:#fff;border:none;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+  .err{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;min-height:16px}
+  .wrap{max-width:900px;margin:0 auto;padding:14px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--muted)}.chip b{color:var(--navy)}
+  .date{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px}
+  .prog{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+  .prog .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+  .prog .track{height:8px;background:#e8eef6;border-radius:999px;overflow:hidden}.prog .fill{height:100%;background:var(--teal);width:0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+  .card .h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px}
+  .card .eco{font-size:11px;color:#fff;background:var(--navy2);padding:2px 8px;border-radius:6px;font-weight:700}
+  .card .nom{font-size:15px;font-weight:700;color:var(--navy);margin-top:4px}
+  .turno{display:grid;grid-template-columns:76px 1fr 1fr;gap:8px;align-items:center;margin-top:8px}
+  .turno .lbl{font-size:12px;font-weight:700;color:var(--muted)}
+  .tg{border:1px solid var(--line);background:#f8fafc;color:#334155;border-radius:9px;padding:10px 6px;font-size:13px;font-weight:600;cursor:pointer;text-align:center;transition:.12s}
+  .tg .t{font-size:10px;display:block;color:var(--muted);font-weight:600}
+  .tg.on{background:var(--teal);border-color:var(--teal);color:#fff}.tg.on .t{color:rgba(255,255,255,.85)}
+  .tg:active{transform:scale(.97)}
+  .done-badge{font-size:10px;background:#dcfce7;color:#166534;border-radius:6px;padding:2px 6px;font-weight:700}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tab{flex:1;padding:11px;text-align:center;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:700;font-size:14px;cursor:pointer}
+  .tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .metric .n{font-size:24px;font-weight:800;color:var(--navy)}.metric .l{font-size:11px;color:var(--muted);margin-top:2px}
+  .zblock{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
+  .zhead{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:#f1f5f9;cursor:pointer}
+  .zhead .zn{font-weight:700;color:var(--navy);font-size:14px}.zhead .sup{font-size:11px;color:var(--muted)}
+  .zbars{display:flex;gap:14px;align-items:center}.zbar{width:84px}
+  .zbar .cap{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:3px}
+  .zbar .track{height:6px;background:#e2e8f0;border-radius:999px;overflow:hidden}.zbar .fill{height:100%}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{padding:8px 6px;border-bottom:1px solid #eef2f7;text-align:center}
+  th{background:#fafcff;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.03em}
+  td.nom{text-align:left;font-weight:600;color:#0f172a}td .eco{color:var(--muted);font-weight:400;font-size:10px}
+  .yes{color:var(--ok);font-weight:800}.no{color:#cbd5e1;font-weight:800}
+  .cumplio{background:#dcfce7;color:#166534;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800}
+  .pend{background:#fef3c7;color:#92400e;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800}
+  .loading{position:fixed;inset:0;background:rgba(255,255,255,.7);display:flex;align-items:center;justify-content:center;z-index:50}
+  .spin{width:34px;height:34px;border:4px solid #dbe3ee;border-top-color:var(--orange);border-radius:50%;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:14px}
+  .refresh{margin-left:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px;cursor:pointer;color:var(--navy);font-weight:600}
+</style>
+</head>
+<body>
+
+<script>
+  // 1) Pega aquí la URL /exec de tu Apps Script (Aplicación web):
+  const API_URL = "https://script.google.com/macros/s/AKfycbzzlHiYjjHolDMOwrieOOnopfB06ZsfDcrKOAt9lZdczr-awQOJsJEXinEBzBc3XFXK/exec";
+
+  // 2) Usuarios: un capitán por zona (sin contraseña). Edítalos si cambia una zona.
+  const USERS = [
+    {rol:"admin", zona:"", nombre:"Administrador"},
+    {rol:"zona", zona:"Alamo", nombre:"Capitán Zona Alamo"},
+    {rol:"zona", zona:"Gutierrez Zamora", nombre:"Capitán Zona Gutierrez Zamora"},
+    {rol:"zona", zona:"Huauchinango", nombre:"Capitán Zona Huauchinango"},
+    {rol:"zona", zona:"Huejutla", nombre:"Capitán Zona Huejutla"},
+    {rol:"zona", zona:"Papantla", nombre:"Capitán Zona Papantla"},
+    {rol:"zona", zona:"Poza Rica", nombre:"Capitán Zona Poza Rica"},
+    {rol:"zona", zona:"Tampico Norte", nombre:"Capitán Zona Tampico Norte"},
+    {rol:"zona", zona:"Tampico Sur", nombre:"Capitán Zona Tampico Sur"},
+    {rol:"zona", zona:"Tantoyuca", nombre:"Capitán Zona Tantoyuca"},
+    {rol:"zona", zona:"Tuxpan", nombre:"Capitán Zona Tuxpan"}
+  ];
+</script>
+
+<div id="loginView" class="login-wrap">
+  <div class="login">
+    <div class="head"><h1>Conteos Cíclicos</h1><p>Región Veracruz Norte</p></div>
+    <div class="body">
+      <label>Selecciona tu usuario</label>
+      <select id="selUser"></select>
+      <button id="btnLogin">Entrar</button>
+      <div id="loginErr" class="err"></div>
+    </div>
+  </div>
+</div>
+
+<div id="appView" class="hidden">
+  <div class="top">
+    <div><div class="brand">Conteos Cíclicos</div><div class="sub">Veracruz Norte</div></div>
+    <div class="spacer"></div>
+    <div class="who" id="who"></div>
+    <button class="btn-out" id="btnSalir">Salir</button>
+  </div>
+  <div class="wrap" id="content"></div>
+</div>
+
+<div id="loading" class="loading hidden"><div class="spin"></div></div>
+
+<script>
+const state = { user:null, tiendas:[], estado:{}, fecha:hoy(), adminTab:'reporte' };
+function hoy(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtFecha(f){const [y,m,d]=f.split('-');const me=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return d+' '+me[(+m)-1]+' '+y;}
+const $=id=>document.getElementById(id);
+function showLoad(v){$('loading').classList.toggle('hidden',!v);}
+
+function api(params){
+  return new Promise((resolve,reject)=>{
+    if(!API_URL||API_URL.indexOf('PEGA_AQUI')===0){reject(new Error('Falta configurar API_URL en el codigo'));return;}
+    const cb='cb_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script');let done=false;
+    const timer=setTimeout(()=>{if(!done){cleanup();reject(new Error('Sin respuesta del servidor'));}},12000);
+    function cleanup(){done=true;clearTimeout(timer);delete window[cb];s.remove();}
+    window[cb]=data=>{cleanup();resolve(data);};
+    const q=Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
+    s.src=API_URL+'?'+q+'&callback='+cb;
+    s.onerror=()=>{cleanup();reject(new Error('Error de red'));};
+    document.body.appendChild(s);
+  });
+}
+
+(function initLogin(){
+  const sel=$('selUser');
+  USERS.forEach((u,i)=>{const o=document.createElement('option');o.value=i;o.textContent=u.nombre;sel.appendChild(o);});
+})();
+$('btnLogin').onclick=doLogin;
+async function doLogin(){
+  const i=+$('selUser').value; state.user=USERS[i];
+  $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden');
+  $('who').innerHTML=state.user.nombre+'<br>'+(state.user.rol==='admin'?'Administrador':('Zona '+state.user.zona));
+  if(state.user.rol==='admin') await entrarAdmin(); else await entrarZona();
+}
+$('btnSalir').onclick=()=>location.reload();
+
+async function cargarTiendas(zona){const r=await api({action:'tiendas',zona:zona||''});state.tiendas=r.ok?r.tiendas:[];}
+async function cargarEstado(){const r=await api({action:'estado',fecha:state.fecha});state.estado=r.ok?r.estado:{};}
+function estOf(eco){return state.estado[eco]||{mat_cic:'NO',mat_man:'NO',ves_cic:'NO',ves_man:'NO'};}
+
+async function entrarZona(){
+  showLoad(true);
+  try{await cargarTiendas(state.user.zona);await cargarEstado();renderZona();}
+  catch(e){$('content').innerHTML='<div class="empty">'+e.message+'</div>';}
+  finally{showLoad(false);}
+}
+function renderZona(){
+  const t=state.tiendas;let completas=0;
+  t.forEach(x=>{const e=estOf(x.eco);if(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI')completas++;});
+  const pct=t.length?Math.round(completas/t.length*100):0;
+  let html='<div class="bar"><span class="chip">Zona <b>'+state.user.zona+'</b></span><span class="chip">'+fmtFecha(state.fecha)+'</span><button class="refresh" onclick="entrarZona()">&#8635; Actualizar</button></div>'
+    +'<div class="prog"><div class="row"><span>Tiendas completas (4/4 marcas)</span><b>'+completas+'/'+t.length+'</b></div><div class="track"><div class="fill" style="width:'+pct+'%"></div></div></div>';
+  if(!t.length){html+='<div class="empty">No hay tiendas activas en tu zona.</div>';$('content').innerHTML=html;return;}
+  t.forEach(x=>{
+    const e=estOf(x.eco);
+    const full=(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI');
+    html+='<div class="card"><div class="h"><div><span class="eco">ECO '+x.eco+'</span><div class="nom">'+x.nombre+'</div></div>'+(full?'<span class="done-badge">Completa</span>':'')+'</div>'
+      +'<div class="turno"><span class="lbl">Matutino</span>'+tgBtn(x,'mat_cic',e.mat_cic,'Cíclico')+tgBtn(x,'mat_man',e.mat_man,'Manual')+'</div>'
+      +'<div class="turno"><span class="lbl">Vespertino</span>'+tgBtn(x,'ves_cic',e.ves_cic,'Cíclico')+tgBtn(x,'ves_man',e.ves_man,'Manual')+'</div></div>';
+  });
+  $('content').innerHTML=html;
+}
+function tgBtn(x,campo,val,label){
+  const on=val==='SI';
+  return '<button class="tg '+(on?'on':'')+'" onclick="toggle(\''+x.eco+'\',\''+campo+'\',this)" data-nom="'+x.nombre.replace(/"/g,'&quot;')+'" data-zona="'+x.zona+'">'+label+'<span class="t">'+(on?'✓ realizado':'pendiente')+'</span></button>';
+}
+async function toggle(eco,campo,btn){
+  const cur=estOf(eco);const nuevo=cur[campo]==='SI'?'NO':'SI';
+  if(!state.estado[eco])state.estado[eco]={mat_cic:'NO',mat_man:'NO',ves_cic:'NO',ves_man:'NO'};
+  state.estado[eco][campo]=nuevo;
+  btn.classList.toggle('on',nuevo==='SI');btn.querySelector('.t').textContent=nuevo==='SI'?'✓ realizado':'pendiente';
+  try{
+    const r=await api({action:'marcar',fecha:state.fecha,eco,campo,valor:nuevo,usuario:state.user.nombre,nombre:btn.dataset.nom,zona:btn.dataset.zona});
+    if(!r.ok)throw new Error(r.error||'No se pudo guardar');
+    renderZona();
+  }catch(e){
+    state.estado[eco][campo]=nuevo==='SI'?'NO':'SI';
+    alert('No se guardó: '+e.message);renderZona();
+  }
+}
+
+async function entrarAdmin(){
+  showLoad(true);
+  try{await cargarTiendas('');await cargarEstado();renderAdmin();}
+  catch(e){$('content').innerHTML='<div class="empty">'+e.message+'</div>';}
+  finally{showLoad(false);}
+}
+async function recargarAdmin(){showLoad(true);try{await cargarEstado();renderAdmin();}finally{showLoad(false);}}
+function renderAdmin(){
+  let html='<div class="tabs"><div class="tab '+(state.adminTab==='reporte'?'on':'')+'" onclick="setTab(\'reporte\')">Reporte</div><div class="tab '+(state.adminTab==='tiendas'?'on':'')+'" onclick="setTab(\'tiendas\')">Tiendas</div></div>'
+    +'<div class="bar"><span class="chip">Región <b>Veracruz Norte</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
+  html+=state.adminTab==='reporte'?reporteHTML():tiendasHTML();
+  $('content').innerHTML=html;
+}
+function setTab(t){state.adminTab=t;renderAdmin();}
+async function cambiarFecha(f){state.fecha=f;await recargarAdmin();}
+function cumplioTurno(e,turno){return turno==='mat'?(e.mat_cic==='SI'&&e.mat_man==='SI'):(e.ves_cic==='SI'&&e.ves_man==='SI');}
+function agruparPorZona(){const g={};state.tiendas.forEach(x=>{(g[x.zona]=g[x.zona]||[]).push(x);});return g;}
+function reporteHTML(){
+  const t=state.tiendas;let matOk=0,vesOk=0;
+  t.forEach(x=>{const e=estOf(x.eco);if(cumplioTurno(e,'mat'))matOk++;if(cumplioTurno(e,'ves'))vesOk++;});
+  const pMat=t.length?Math.round(matOk/t.length*100):0,pVes=t.length?Math.round(vesOk/t.length*100):0;
+  let html='<div class="metrics"><div class="metric"><div class="n">'+t.length+'</div><div class="l">Tiendas activas</div></div>'
+    +'<div class="metric"><div class="n">'+matOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Matutino cumplido ('+pMat+'%)</div></div>'
+    +'<div class="metric"><div class="n">'+vesOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Vespertino cumplido ('+pVes+'%)</div></div>'
+    +'<div class="metric"><div class="n" style="font-size:16px">'+fmtFecha(state.fecha)+'</div><div class="l">Fecha del reporte</div></div></div>';
+  const g=agruparPorZona();
+  Object.keys(g).sort().forEach(zona=>{
+    const arr=g[zona];let m=0,v=0;
+    arr.forEach(x=>{const e=estOf(x.eco);if(cumplioTurno(e,'mat'))m++;if(cumplioTurno(e,'ves'))v++;});
+    const pm=arr.length?Math.round(m/arr.length*100):0,pv=arr.length?Math.round(v/arr.length*100):0;
+    html+='<div class="zblock"><div class="zhead" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">'
+      +'<div><div class="zn">'+zona+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+arr.length+' tiendas</div></div>'
+      +'<div class="zbars"><div class="zbar"><div class="cap"><span>Mat</span><span>'+pm+'%</span></div><div class="track"><div class="fill" style="width:'+pm+'%;background:'+(pm===100?'var(--ok)':'var(--orange)')+'"></div></div></div>'
+      +'<div class="zbar"><div class="cap"><span>Ves</span><span>'+pv+'%</span></div><div class="track"><div class="fill" style="width:'+pv+'%;background:'+(pv===100?'var(--ok)':'var(--orange)')+'"></div></div></div></div></div>'
+      +'<div><table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Mat</th><th>Ves Cíc</th><th>Ves Man</th><th>Ves</th></tr></thead><tbody>';
+    arr.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(x=>{
+      const e=estOf(x.eco);
+      const mk=vv=>vv==='SI'?'<span class="yes">✓</span>':'<span class="no">–</span>';
+      const bd=(e,tt)=>cumplioTurno(e,tt)?'<span class="cumplio">Sí</span>':'<span class="pend">No</span>';
+      html+='<tr><td class="nom">'+x.nombre+'<br><span class="eco">ECO '+x.eco+'</span></td><td>'+mk(e.mat_cic)+'</td><td>'+mk(e.mat_man)+'</td><td>'+bd(e,'mat')+'</td><td>'+mk(e.ves_cic)+'</td><td>'+mk(e.ves_man)+'</td><td>'+bd(e,'ves')+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+  });
+  if(!t.length)html='<div class="empty">No hay tiendas activas en el catálogo.</div>';
+  return html;
+}
+function tiendasHTML(){
+  const g=agruparPorZona();
+  if(!state.tiendas.length)return '<div class="empty">No hay tiendas activas en el catálogo.</div>';
+  let html='';
+  Object.keys(g).sort().forEach(zona=>{
+    const arr=g[zona].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+    html+='<div class="zblock"><div class="zhead"><div class="zn">'+zona+'</div><div class="sup">'+arr.length+' tiendas</div></div><div><table><tbody>';
+    arr.forEach(x=>{html+='<tr><td class="nom">'+x.nombre+'</td><td style="text-align:right;color:var(--muted)">ECO '+x.eco+'</td></tr>';});
+    html+='</tbody></table></div></div>';
+  });
+  return html;
+}
+</script>
+</body>
+</html>
