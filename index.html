@@ -30,7 +30,9 @@
   .savebar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:600}
   .savebar.busy{background:#f8fafc;border-color:var(--line);color:var(--muted)}
   .savebar.err{background:#fef2f2;border-color:#fecaca;color:var(--danger)}
+  .savebar.pend{background:#fffbeb;border-color:#fde68a;color:#92400e}
   .btn-confirm{background:#fff;border:1px solid var(--line);color:var(--navy);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .savebar.pend .btn-confirm{background:var(--orange);border-color:var(--orange);color:#fff}
   .prog{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px}
   .prog .row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
   .prog .track{height:8px;background:#e8eef6;border-radius:999px;overflow:hidden}.prog .fill{height:100%;background:var(--teal);width:0}
@@ -44,6 +46,8 @@
   .tg .t{font-size:10px;display:block;color:var(--muted);font-weight:600}
   .tg.on{background:var(--teal);border-color:var(--teal);color:#fff}.tg.on .t{color:rgba(255,255,255,.85)}
   .tg.locked{cursor:default}
+  .tg.pending{background:#fff7ed;border-color:var(--orange);color:#9a3412}
+  .tg.pending .t{color:#c2410c}
   .tg:active{transform:scale(.97)}
   .done-badge{font-size:10px;background:#dcfce7;color:#166534;border-radius:6px;padding:2px 6px;font-weight:700}
   .tabs{display:flex;gap:6px;margin-bottom:12px}
@@ -53,15 +57,17 @@
   .metric{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
   .metric .n{font-size:24px;font-weight:800;color:var(--navy)}.metric .l{font-size:11px;color:var(--muted);margin-top:2px}
   .zblock{background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden}
-  .zhead{display:flex;justify-content:space-between;align-items:center;padding:11px 14px;background:#f1f5f9;cursor:pointer}
+  .zhead{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;align-items:center;padding:11px 14px;background:#f1f5f9;cursor:pointer}
   .zhead .zn{font-weight:700;color:var(--navy);font-size:14px}.zhead .sup{font-size:11px;color:var(--muted)}
-  .zbars{display:flex;gap:14px;align-items:center}.zbar{width:84px}
-  .zbar .cap{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:3px}
+  .zbars{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}.zbar{width:64px}
+  .zbar .cap{font-size:9px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:3px}
   .zbar .track{height:6px;background:#e2e8f0;border-radius:999px;overflow:hidden}.zbar .fill{height:100%}
   table{width:100%;border-collapse:collapse;font-size:12px}
   th,td{padding:8px 6px;border-bottom:1px solid #eef2f7;text-align:center}
   th{background:#fafcff;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.03em}
   td.nom{text-align:left;font-weight:600;color:#0f172a}td .eco{color:var(--muted);font-weight:400;font-size:10px}
+  tfoot td{font-weight:800;color:var(--navy);background:#f8fafc;border-top:2px solid var(--line);border-bottom:none}
+  tfoot td.nom{color:var(--navy)}
   .yes{color:var(--ok);font-weight:800}.no{color:#cbd5e1;font-weight:800}
   .cumplio{background:#dcfce7;color:#166534;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800}
   .pend{background:#fef3c7;color:#92400e;border-radius:6px;padding:2px 6px;font-size:10px;font-weight:800}
@@ -119,7 +125,7 @@
 <div id="loading" class="loading hidden"><div class="spin"></div></div>
 
 <script>
-const state = { user:null, tiendas:[], estado:{}, fecha:hoy(), adminTab:'reporte' };
+const state = { user:null, tiendas:[], estado:{}, pending:{}, fecha:hoy(), adminTab:'reporte' };
 function hoy(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fmtFecha(f){const [y,m,d]=f.split('-');const me=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return d+' '+me[(+m)-1]+' '+y;}
 const $=id=>document.getElementById(id);
@@ -178,7 +184,7 @@ function renderZona(){
   const totalMarcas=t.length*4;
   const pct=totalMarcas?Math.round(marcasHechas/totalMarcas*100):0;
   let html='<div class="bar"><span class="chip">Zona <b>'+state.user.zona+'</b></span><span class="chip">'+fmtFecha(state.fecha)+'</span><button class="refresh" onclick="entrarZona()">&#8635; Actualizar</button></div>'
-    +'<div id="saveStatus" class="savebar"><span id="saveStatusText">Todos tus conteos están guardados.</span><button class="btn-confirm" onclick="confirmarGuardado()">Confirmar guardado</button></div>'
+    +saveBarHTML()
     +'<div class="prog"><div class="row"><span>Avance del día ('+marcasHechas+'/'+totalMarcas+' marcas)</span><b>'+pct+'%</b></div><div class="track"><div class="fill" style="width:'+pct+'%"></div></div></div>'
     +'<div class="metrics">'
       +'<div class="metric"><div class="n">'+completas+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Tiendas cumplidas (4/4)</div></div>'
@@ -191,56 +197,77 @@ function renderZona(){
     const e=estOf(x.eco);
     const full=(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI');
     html+='<div class="card"><div class="h"><div><span class="eco">ECO '+x.eco+'</span><div class="nom">'+x.nombre+'</div></div>'+(full?'<span class="done-badge">Completa</span>':'')+'</div>'
-      +'<div class="turno"><span class="lbl">Matutino</span>'+tgBtn(x,'mat_cic',e.mat_cic,'Cíclico')+tgBtn(x,'mat_man',e.mat_man,'Manual')+'</div>'
-      +'<div class="turno"><span class="lbl">Vespertino</span>'+tgBtn(x,'ves_cic',e.ves_cic,'Cíclico')+tgBtn(x,'ves_man',e.ves_man,'Manual')+'</div></div>';
+      +'<div class="turno"><span class="lbl">Matutino</span>'+tgBtn(x,'mat_cic','Cíclico')+tgBtn(x,'mat_man','Manual')+'</div>'
+      +'<div class="turno"><span class="lbl">Vespertino</span>'+tgBtn(x,'ves_cic','Cíclico')+tgBtn(x,'ves_man','Manual')+'</div></div>';
   });
   $('content').innerHTML=html;
 }
-function setSaveStatus(kind){
-  const el=$('saveStatusText'); if(!el)return;
-  const bar=$('saveStatus');
-  if(kind==='saving'){el.textContent='Guardando...';bar.classList.remove('ok','err');bar.classList.add('busy');}
-  else if(kind==='ok'){el.textContent='Guardado correctamente · '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});bar.classList.remove('busy','err');bar.classList.add('ok');}
-  else if(kind==='err'){el.textContent='No se pudo guardar. Revisa tu conexión e inténtalo de nuevo.';bar.classList.remove('busy','ok');bar.classList.add('err');}
+
+/* ---- Selección local (sin llamada a red) + guardado en lote ---- */
+function contarPendientes(){
+  let n=0;
+  Object.keys(state.pending).forEach(eco=>{ n+=Object.keys(state.pending[eco]).length; });
+  return n;
 }
-async function confirmarGuardado(){
-  setSaveStatus('saving');
+function saveBarHTML(){
+  const n=contarPendientes();
+  if(n>0){
+    return '<div id="saveStatus" class="savebar pend"><span id="saveStatusText">Tienes '+n+' marca'+(n>1?'s':'')+' seleccionada'+(n>1?'s':'')+' sin guardar.</span><button class="btn-confirm" onclick="guardarPendientes()">Guardar '+n+' cambio'+(n>1?'s':'')+'</button></div>';
+  }
+  return '<div id="saveStatus" class="savebar ok"><span id="saveStatusText">Todos tus conteos están guardados.</span><button class="btn-confirm" onclick="confirmarGuardado()">Actualizar</button></div>';
+}
+function markState(eco,campo){
+  if(estOf(eco)[campo]==='SI')return 'confirmed';
+  if((state.pending[eco]||{})[campo])return 'pending';
+  return 'none';
+}
+function tgBtn(x,campo,label){
+  const st=markState(x.eco,campo);
+  if(st==='confirmed'){
+    return '<div class="tg on locked">'+label+'<span class="t">✓ registrado</span></div>';
+  }
+  if(st==='pending'){
+    return '<button class="tg pending" onclick="togglePending(\''+x.eco+'\',\''+campo+'\')">'+label+'<span class="t">seleccionado, toca para quitar</span></button>';
+  }
+  return '<button class="tg" onclick="togglePending(\''+x.eco+'\',\''+campo+'\')">'+label+'<span class="t">pendiente</span></button>';
+}
+function togglePending(eco,campo){
+  if(!state.pending[eco])state.pending[eco]={};
+  if(state.pending[eco][campo]) delete state.pending[eco][campo];
+  else state.pending[eco][campo]=true;
+  if(Object.keys(state.pending[eco]).length===0) delete state.pending[eco];
+  renderZona();
+}
+async function guardarPendientes(){
+  const items=[];
+  Object.keys(state.pending).forEach(eco=>{
+    const tienda=state.tiendas.find(x=>x.eco===eco);
+    Object.keys(state.pending[eco]).forEach(campo=>{
+      items.push({eco:eco,campo:campo,valor:'SI',nombre:tienda?tienda.nombre:'',zona:tienda?tienda.zona:state.user.zona});
+    });
+  });
+  if(!items.length)return;
   showLoad(true);
   try{
-    await cargarEstado();
+    const r=await api({action:'marcarLote',fecha:state.fecha,usuario:state.user.nombre,items:JSON.stringify(items)});
+    if(!r.ok)throw new Error(r.error||'No se pudo guardar');
+    items.forEach(it=>{
+      if(!state.estado[it.eco])state.estado[it.eco]={mat_cic:'NO',mat_man:'NO',ves_cic:'NO',ves_man:'NO'};
+      state.estado[it.eco][it.campo]='SI';
+    });
+    state.pending={};
     renderZona();
-    setSaveStatus('ok');
   }catch(e){
-    setSaveStatus('err');
+    alert('No se guardó: '+e.message+'\nTus selecciones siguen marcadas, intenta de nuevo.');
   }finally{
     showLoad(false);
   }
 }
-function tgBtn(x,campo,val,label){
-  const on=val==='SI';
-  if(on){
-    return '<div class="tg on locked">'+label+'<span class="t">✓ registrado</span></div>';
-  }
-  return '<button class="tg" onclick="toggle(\''+x.eco+'\',\''+campo+'\',this)" data-nom="'+x.nombre.replace(/"/g,'&quot;')+'" data-zona="'+x.zona+'">'+label+'<span class="t">pendiente</span></button>';
-}
-async function toggle(eco,campo,btn){
-  const cur=estOf(eco);
-  if(cur[campo]==='SI')return;
-  const nuevo='SI';
-  if(!state.estado[eco])state.estado[eco]={mat_cic:'NO',mat_man:'NO',ves_cic:'NO',ves_man:'NO'};
-  state.estado[eco][campo]=nuevo;
-  btn.disabled=true;
-  setSaveStatus('saving');
-  try{
-    const r=await api({action:'marcar',fecha:state.fecha,eco,campo,valor:nuevo,usuario:state.user.nombre,nombre:btn.dataset.nom,zona:btn.dataset.zona});
-    if(!r.ok)throw new Error(r.error||'No se pudo guardar');
-    renderZona();
-    setSaveStatus('ok');
-  }catch(e){
-    state.estado[eco][campo]='NO';
-    setSaveStatus('err');
-    alert('No se guardó: '+e.message);renderZona();
-  }
+async function confirmarGuardado(){
+  showLoad(true);
+  try{ await cargarEstado(); renderZona(); }
+  catch(e){ alert('No se pudo actualizar: '+e.message); }
+  finally{ showLoad(false); }
 }
 
 async function entrarAdmin(){
@@ -270,18 +297,23 @@ function reporteHTML(){
     +'<div class="metric"><div class="n" style="font-size:16px">'+fmtFecha(state.fecha)+'</div><div class="l">Fecha del reporte</div></div></div>';
   const g=agruparPorZona();
   Object.keys(g).sort().forEach(zona=>{
-    const arr=g[zona];let m=0,v=0,c=0;
+    const arr=g[zona];let m=0,v=0,c=0,mc=0,mm=0,vc=0,vm=0;
     arr.forEach(x=>{
       const e=estOf(x.eco);
       if(cumplioTurno(e,'mat'))m++;
       if(cumplioTurno(e,'ves'))v++;
       if(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI')c++;
+      if(e.mat_cic==='SI')mc++;
+      if(e.mat_man==='SI')mm++;
+      if(e.ves_cic==='SI')vc++;
+      if(e.ves_man==='SI')vm++;
     });
-    const pm=arr.length?Math.round(m/arr.length*100):0,pv=arr.length?Math.round(v/arr.length*100):0;
+    const n=arr.length;
+    const pMc=n?Math.round(mc/n*100):0,pMm=n?Math.round(mm/n*100):0,pVc=n?Math.round(vc/n*100):0,pVm=n?Math.round(vm/n*100):0;
+    const bar=(lbl,pct)=>'<div class="zbar"><div class="cap"><span>'+lbl+'</span><span>'+pct+'%</span></div><div class="track"><div class="fill" style="width:'+pct+'%;background:'+(pct===100?'var(--ok)':'var(--orange)')+'"></div></div></div>';
     html+='<div class="zblock"><div class="zhead" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">'
-      +'<div><div class="zn">'+zona+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+arr.length+' tiendas · '+c+'/'+arr.length+' cumplidas</div></div>'
-      +'<div class="zbars"><div class="zbar"><div class="cap"><span>Mat</span><span>'+pm+'%</span></div><div class="track"><div class="fill" style="width:'+pm+'%;background:'+(pm===100?'var(--ok)':'var(--orange)')+'"></div></div></div>'
-      +'<div class="zbar"><div class="cap"><span>Ves</span><span>'+pv+'%</span></div><div class="track"><div class="fill" style="width:'+pv+'%;background:'+(pv===100?'var(--ok)':'var(--orange)')+'"></div></div></div></div></div>'
+      +'<div><div class="zn">'+zona+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+n+' tiendas · '+c+'/'+n+' cumplidas</div></div>'
+      +'<div class="zbars">'+bar('Mat Cíc',pMc)+bar('Mat Man',pMm)+bar('Ves Cíc',pVc)+bar('Ves Man',pVm)+'</div></div>'
       +'<div class="hidden"><table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Mat</th><th>Ves Cíc</th><th>Ves Man</th><th>Ves</th></tr></thead><tbody>';
     arr.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(x=>{
       const e=estOf(x.eco);
@@ -289,7 +321,7 @@ function reporteHTML(){
       const bd=(e,tt)=>cumplioTurno(e,tt)?'<span class="cumplio">Sí</span>':'<span class="pend">No</span>';
       html+='<tr><td class="nom">'+x.nombre+'<br><span class="eco">ECO '+x.eco+'</span></td><td>'+mk(e.mat_cic)+'</td><td>'+mk(e.mat_man)+'</td><td>'+bd(e,'mat')+'</td><td>'+mk(e.ves_cic)+'</td><td>'+mk(e.ves_man)+'</td><td>'+bd(e,'ves')+'</td></tr>';
     });
-    html+='</tbody></table></div></div>';
+    html+='</tbody><tfoot><tr class="tot"><td class="nom">Total</td><td>'+mc+'/'+n+'</td><td>'+mm+'/'+n+'</td><td>'+m+'/'+n+'</td><td>'+vc+'/'+n+'</td><td>'+vm+'/'+n+'</td><td>'+v+'/'+n+'</td></tr></tfoot></table></div></div>';
   });
   if(!t.length)html='<div class="empty">No hay tiendas activas en el catálogo.</div>';
   return html;
