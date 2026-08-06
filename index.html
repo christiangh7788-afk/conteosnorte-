@@ -136,7 +136,7 @@ function api(params){
     if(!API_URL||API_URL.indexOf('PEGA_AQUI')===0){reject(new Error('Falta configurar API_URL en el codigo'));return;}
     const cb='cb_'+Math.random().toString(36).slice(2);
     const s=document.createElement('script');let done=false;
-    const timer=setTimeout(()=>{if(!done){cleanup();reject(new Error('Sin respuesta del servidor'));}},12000);
+    const timer=setTimeout(()=>{if(!done){cleanup();reject(new Error('Sin respuesta del servidor'));}},25000);
     function cleanup(){done=true;clearTimeout(timer);delete window[cb];s.remove();}
     window[cb]=data=>{cleanup();resolve(data);};
     const q=Object.entries(params).map(([k,v])=>encodeURIComponent(k)+'='+encodeURIComponent(v)).join('&');
