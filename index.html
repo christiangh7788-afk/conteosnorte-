@@ -164,16 +164,22 @@ async function entrarZona(){
   finally{showLoad(false);}
 }
 function renderZona(){
-  const t=state.tiendas;let completas=0,matOk=0,vesOk=0;
+  const t=state.tiendas;let completas=0,matOk=0,vesOk=0,marcasHechas=0;
   t.forEach(x=>{
     const e=estOf(x.eco);
+    if(e.mat_cic==='SI')marcasHechas++;
+    if(e.mat_man==='SI')marcasHechas++;
+    if(e.ves_cic==='SI')marcasHechas++;
+    if(e.ves_man==='SI')marcasHechas++;
     if(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI')completas++;
     if(e.mat_cic==='SI'&&e.mat_man==='SI')matOk++;
     if(e.ves_cic==='SI'&&e.ves_man==='SI')vesOk++;
   });
-  const pct=t.length?Math.round(completas/t.length*100):0;
+  const totalMarcas=t.length*4;
+  const pct=totalMarcas?Math.round(marcasHechas/totalMarcas*100):0;
   let html='<div class="bar"><span class="chip">Zona <b>'+state.user.zona+'</b></span><span class="chip">'+fmtFecha(state.fecha)+'</span><button class="refresh" onclick="entrarZona()">&#8635; Actualizar</button></div>'
     +'<div id="saveStatus" class="savebar"><span id="saveStatusText">Todos tus conteos están guardados.</span><button class="btn-confirm" onclick="confirmarGuardado()">Confirmar guardado</button></div>'
+    +'<div class="prog"><div class="row"><span>Avance del día ('+marcasHechas+'/'+totalMarcas+' marcas)</span><b>'+pct+'%</b></div><div class="track"><div class="fill" style="width:'+pct+'%"></div></div></div>'
     +'<div class="metrics">'
       +'<div class="metric"><div class="n">'+completas+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Tiendas cumplidas (4/4)</div></div>'
       +'<div class="metric"><div class="n">'+matOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Matutino cumplido</div></div>'
