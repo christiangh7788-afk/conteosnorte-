@@ -26,6 +26,9 @@
   .wrap{max-width:900px;margin:0 auto;padding:14px}
   .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
   .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--muted)}.chip b{color:var(--navy)}
+  .region-chip{cursor:pointer;font-weight:600;user-select:none}
+  .region-chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
+  .region-tag{font-size:10px;font-weight:600;color:var(--teal);background:#e6fbf9;border-radius:6px;padding:2px 6px;vertical-align:middle}
   .date{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px}
   .savebar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:600}
   .savebar.busy{background:#f8fafc;border-color:var(--line);color:var(--muted)}
@@ -86,17 +89,34 @@
 
   // 2) Usuarios: un capitán por zona (sin contraseña). Edítalos si cambia una zona.
   const USERS = [
-    {rol:"admin", zona:"", nombre:"Administrador"},
-    {rol:"zona", zona:"Alamo", nombre:"Capitán Zona Alamo"},
-    {rol:"zona", zona:"Gutierrez Zamora", nombre:"Capitán Zona Gutierrez Zamora"},
-    {rol:"zona", zona:"Huauchinango", nombre:"Capitán Zona Huauchinango"},
-    {rol:"zona", zona:"Huejutla", nombre:"Capitán Zona Huejutla"},
-    {rol:"zona", zona:"Papantla", nombre:"Capitán Zona Papantla"},
-    {rol:"zona", zona:"Poza Rica", nombre:"Capitán Zona Poza Rica"},
-    {rol:"zona", zona:"Tampico Norte", nombre:"Capitán Zona Tampico Norte"},
-    {rol:"zona", zona:"Tampico Sur", nombre:"Capitán Zona Tampico Sur"},
-    {rol:"zona", zona:"Tantoyuca", nombre:"Capitán Zona Tantoyuca"},
-    {rol:"zona", zona:"Tuxpan", nombre:"Capitán Zona Tuxpan"}
+    {rol:"admin", zona:"", region:"", nombre:"Administrador"},
+    {rol:"zona", zona:"Alamo", region:"Veracruz Norte", nombre:"Capitán Zona Alamo"},
+    {rol:"zona", zona:"Alvarado", region:"Veracruz Sur", nombre:"Capitán Zona Alvarado"},
+    {rol:"zona", zona:"Boca Del Rio", region:"Veracruz Centro", nombre:"Capitán Zona Boca Del Rio"},
+    {rol:"zona", zona:"Cafetalera", region:"Veracruz Sur", nombre:"Capitán Zona Cafetalera"},
+    {rol:"zona", zona:"Cardel", region:"Veracruz Centro", nombre:"Capitán Zona Cardel"},
+    {rol:"zona", zona:"Coatepec", region:"Veracruz Centro", nombre:"Capitán Zona Coatepec"},
+    {rol:"zona", zona:"Cordoba", region:"Veracruz Sur", nombre:"Capitán Zona Cordoba"},
+    {rol:"zona", zona:"Costa Esmeralda", region:"Veracruz Centro", nombre:"Capitán Zona Costa Esmeralda"},
+    {rol:"zona", zona:"Cuenca", region:"Veracruz Sur", nombre:"Capitán Zona Cuenca"},
+    {rol:"zona", zona:"Gutierrez Zamora", region:"Veracruz Norte", nombre:"Capitán Zona Gutierrez Zamora"},
+    {rol:"zona", zona:"Heroica", region:"Veracruz Centro", nombre:"Capitán Zona Heroica"},
+    {rol:"zona", zona:"Huauchinango", region:"Veracruz Norte", nombre:"Capitán Zona Huauchinango"},
+    {rol:"zona", zona:"Huejutla", region:"Veracruz Norte", nombre:"Capitán Zona Huejutla"},
+    {rol:"zona", zona:"Orizaba", region:"Veracruz Sur", nombre:"Capitán Zona Orizaba"},
+    {rol:"zona", zona:"Papantla", region:"Veracruz Norte", nombre:"Capitán Zona Papantla"},
+    {rol:"zona", zona:"Piñera", region:"Veracruz Sur", nombre:"Capitán Zona Piñera"},
+    {rol:"zona", zona:"Portuaria", region:"Veracruz Centro", nombre:"Capitán Zona Portuaria"},
+    {rol:"zona", zona:"Poza Rica", region:"Veracruz Norte", nombre:"Capitán Zona Poza Rica"},
+    {rol:"zona", zona:"Puerto", region:"Veracruz Sur", nombre:"Capitán Zona Puerto"},
+    {rol:"zona", zona:"Tampico Norte", region:"Veracruz Norte", nombre:"Capitán Zona Tampico Norte"},
+    {rol:"zona", zona:"Tampico Sur", region:"Veracruz Norte", nombre:"Capitán Zona Tampico Sur"},
+    {rol:"zona", zona:"Tantoyuca", region:"Veracruz Norte", nombre:"Capitán Zona Tantoyuca"},
+    {rol:"zona", zona:"Teziutlan", region:"Veracruz Centro", nombre:"Capitán Zona Teziutlan"},
+    {rol:"zona", zona:"Tuxpan", region:"Veracruz Norte", nombre:"Capitán Zona Tuxpan"},
+    {rol:"zona", zona:"Tuxtepec", region:"Veracruz Sur", nombre:"Capitán Zona Tuxtepec"},
+    {rol:"zona", zona:"Tuxtlas", region:"Veracruz Sur", nombre:"Capitán Zona Tuxtlas"},
+    {rol:"zona", zona:"Xalapa", region:"Veracruz Centro", nombre:"Capitán Zona Xalapa"}
   ];
 </script>
 
@@ -125,7 +145,7 @@
 <div id="loading" class="loading hidden"><div class="spin"></div></div>
 
 <script>
-const state = { user:null, tiendas:[], estado:{}, pending:{}, fecha:hoy(), adminTab:'reporte' };
+const state = { user:null, tiendas:[], estado:{}, pending:{}, fecha:hoy(), adminTab:'reporte', adminRegion:'TODAS' };
 function hoy(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fmtFecha(f){const [y,m,d]=f.split('-');const me=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return d+' '+me[(+m)-1]+' '+y;}
 const $=id=>document.getElementById(id);
@@ -183,7 +203,7 @@ function renderZona(){
   });
   const totalMarcas=t.length*4;
   const pct=totalMarcas?Math.round(marcasHechas/totalMarcas*100):0;
-  let html='<div class="bar"><span class="chip">Zona <b>'+state.user.zona+'</b></span><span class="chip">'+fmtFecha(state.fecha)+'</span><button class="refresh" onclick="entrarZona()">&#8635; Actualizar</button></div>'
+  let html='<div class="bar"><span class="chip">Zona <b>'+state.user.zona+'</b></span><span class="chip">'+state.user.region+'</span><span class="chip">'+fmtFecha(state.fecha)+'</span><button class="refresh" onclick="entrarZona()">&#8635; Actualizar</button></div>'
     +saveBarHTML()
     +'<div class="prog"><div class="row"><span>Avance del día ('+marcasHechas+'/'+totalMarcas+' marcas)</span><b>'+pct+'%</b></div><div class="track"><div class="fill" style="width:'+pct+'%"></div></div></div>'
     +'<div class="metrics">'
@@ -278,24 +298,28 @@ async function entrarAdmin(){
 }
 async function recargarAdmin(){showLoad(true);try{await cargarEstado();renderAdmin();}finally{showLoad(false);}}
 function renderAdmin(){
+  const regiones=['TODAS','Veracruz Norte','Veracruz Centro','Veracruz Sur'];
   let html='<div class="tabs"><div class="tab '+(state.adminTab==='reporte'?'on':'')+'" onclick="setTab(\'reporte\')">Reporte</div><div class="tab '+(state.adminTab==='tiendas'?'on':'')+'" onclick="setTab(\'tiendas\')">Tiendas</div></div>'
-    +'<div class="bar"><span class="chip">Región <b>Veracruz Norte</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
+    +'<div class="bar">'+regiones.map(r=>'<span class="chip region-chip '+(state.adminRegion===r?'on':'')+'" onclick="setRegion(\''+r+'\')">'+(r==='TODAS'?'Todas las regiones':r)+'</span>').join('')+'</div>'
+    +'<div class="bar"><span class="chip">Compañía <b>Veracruz</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
   html+=state.adminTab==='reporte'?reporteHTML():tiendasHTML();
   $('content').innerHTML=html;
 }
 function setTab(t){state.adminTab=t;renderAdmin();}
+function setRegion(r){state.adminRegion=r;renderAdmin();}
 async function cambiarFecha(f){state.fecha=f;await recargarAdmin();}
 function cumplioTurno(e,turno){return turno==='mat'?(e.mat_cic==='SI'&&e.mat_man==='SI'):(e.ves_cic==='SI'&&e.ves_man==='SI');}
-function agruparPorZona(){const g={};state.tiendas.forEach(x=>{(g[x.zona]=g[x.zona]||[]).push(x);});return g;}
+function tiendasFiltradas(){return state.adminRegion==='TODAS'?state.tiendas:state.tiendas.filter(x=>x.region===state.adminRegion);}
+function agruparPorZona(t){const g={};(t||state.tiendas).forEach(x=>{(g[x.zona]=g[x.zona]||[]).push(x);});return g;}
 function reporteHTML(){
-  const t=state.tiendas;let matOk=0,vesOk=0;
+  const t=tiendasFiltradas();let matOk=0,vesOk=0;
   t.forEach(x=>{const e=estOf(x.eco);if(cumplioTurno(e,'mat'))matOk++;if(cumplioTurno(e,'ves'))vesOk++;});
   const pMat=t.length?Math.round(matOk/t.length*100):0,pVes=t.length?Math.round(vesOk/t.length*100):0;
   let html='<div class="metrics"><div class="metric"><div class="n">'+t.length+'</div><div class="l">Tiendas activas</div></div>'
     +'<div class="metric"><div class="n">'+matOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Matutino cumplido ('+pMat+'%)</div></div>'
     +'<div class="metric"><div class="n">'+vesOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Vespertino cumplido ('+pVes+'%)</div></div>'
     +'<div class="metric"><div class="n" style="font-size:16px">'+fmtFecha(state.fecha)+'</div><div class="l">Fecha del reporte</div></div></div>';
-  const g=agruparPorZona();
+  const g=agruparPorZona(t);
   Object.keys(g).sort().forEach(zona=>{
     const arr=g[zona];let m=0,v=0,c=0,mc=0,mm=0,vc=0,vm=0;
     arr.forEach(x=>{
@@ -311,8 +335,9 @@ function reporteHTML(){
     const n=arr.length;
     const pMc=n?Math.round(mc/n*100):0,pMm=n?Math.round(mm/n*100):0,pVc=n?Math.round(vc/n*100):0,pVm=n?Math.round(vm/n*100):0;
     const bar=(lbl,pct)=>'<div class="zbar"><div class="cap"><span>'+lbl+'</span><span>'+pct+'%</span></div><div class="track"><div class="fill" style="width:'+pct+'%;background:'+(pct===100?'var(--ok)':'var(--orange)')+'"></div></div></div>';
+    const regionTag=state.adminRegion==='TODAS'?' <span class="region-tag">'+arr[0].region+'</span>':'';
     html+='<div class="zblock"><div class="zhead" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">'
-      +'<div><div class="zn">'+zona+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+n+' tiendas · '+c+'/'+n+' cumplidas</div></div>'
+      +'<div><div class="zn">'+zona+regionTag+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+n+' tiendas · '+c+'/'+n+' cumplidas</div></div>'
       +'<div class="zbars">'+bar('Mat Cíc',pMc)+bar('Mat Man',pMm)+bar('Ves Cíc',pVc)+bar('Ves Man',pVm)+'</div></div>'
       +'<div class="hidden"><table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Mat</th><th>Ves Cíc</th><th>Ves Man</th><th>Ves</th></tr></thead><tbody>';
     arr.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(x=>{
@@ -323,16 +348,18 @@ function reporteHTML(){
     });
     html+='</tbody><tfoot><tr class="tot"><td class="nom">Total</td><td>'+mc+'/'+n+'</td><td>'+mm+'/'+n+'</td><td>'+m+'/'+n+'</td><td>'+vc+'/'+n+'</td><td>'+vm+'/'+n+'</td><td>'+v+'/'+n+'</td></tr></tfoot></table></div></div>';
   });
-  if(!t.length)html='<div class="empty">No hay tiendas activas en el catálogo.</div>';
+  if(!t.length)html='<div class="empty">No hay tiendas activas en esta región.</div>';
   return html;
 }
 function tiendasHTML(){
-  const g=agruparPorZona();
-  if(!state.tiendas.length)return '<div class="empty">No hay tiendas activas en el catálogo.</div>';
+  const t=tiendasFiltradas();
+  const g=agruparPorZona(t);
+  if(!t.length)return '<div class="empty">No hay tiendas activas en esta región.</div>';
   let html='';
   Object.keys(g).sort().forEach(zona=>{
     const arr=g[zona].sort((a,b)=>a.nombre.localeCompare(b.nombre));
-    html+='<div class="zblock"><div class="zhead"><div class="zn">'+zona+'</div><div class="sup">'+arr.length+' tiendas</div></div><div><table><tbody>';
+    const regionTag=state.adminRegion==='TODAS'?' <span class="region-tag">'+arr[0].region+'</span>':'';
+    html+='<div class="zblock"><div class="zhead"><div class="zn">'+zona+regionTag+'</div><div class="sup">'+arr.length+' tiendas</div></div><div><table><tbody>';
     arr.forEach(x=>{html+='<tr><td class="nom">'+x.nombre+'</td><td style="text-align:right;color:var(--muted)">ECO '+x.eco+'</td></tr>';});
     html+='</tbody></table></div></div>';
   });
