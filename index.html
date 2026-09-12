@@ -71,6 +71,9 @@
   .tg.pending .t{color:#c2410c}
   .tg:active{transform:scale(.97)}
   .done-badge{font-size:10px;background:#dcfce7;color:#166534;border-radius:6px;padding:2px 6px;font-weight:700}
+  .coach-card{border:1.5px dashed var(--orange);background:#fff9f2}
+  .coach-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+  .coach-week{font-size:11px;color:var(--muted);margin-top:2px}
   .tabs{display:flex;gap:6px;margin-bottom:12px}
   .tab{flex:1;padding:11px;text-align:center;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-weight:700;font-size:14px;cursor:pointer}
   .tab.on{background:var(--navy);color:#fff;border-color:var(--navy)}
@@ -108,33 +111,33 @@
   // 2) Usuarios: un capitán por zona (sin contraseña). Edítalos si cambia una zona.
   const USERS = [
     {rol:"admin", zona:"", region:"", nombre:"Administrador"},
-    {rol:"zona", zona:"Alamo", region:"Veracruz Norte", nombre:"Capitán Zona Alamo"},
-    {rol:"zona", zona:"Alvarado", region:"Veracruz Sur", nombre:"Capitán Zona Alvarado"},
-    {rol:"zona", zona:"Boca Del Rio", region:"Veracruz Centro", nombre:"Capitán Zona Boca Del Rio"},
-    {rol:"zona", zona:"Cafetalera", region:"Veracruz Sur", nombre:"Capitán Zona Cafetalera"},
-    {rol:"zona", zona:"Cardel", region:"Veracruz Centro", nombre:"Capitán Zona Cardel"},
-    {rol:"zona", zona:"Coatepec", region:"Veracruz Centro", nombre:"Capitán Zona Coatepec"},
-    {rol:"zona", zona:"Cordoba", region:"Veracruz Sur", nombre:"Capitán Zona Cordoba"},
-    {rol:"zona", zona:"Costa Esmeralda", region:"Veracruz Centro", nombre:"Capitán Zona Costa Esmeralda"},
-    {rol:"zona", zona:"Cuenca", region:"Veracruz Sur", nombre:"Capitán Zona Cuenca"},
-    {rol:"zona", zona:"Gutierrez Zamora", region:"Veracruz Norte", nombre:"Capitán Zona Gutierrez Zamora"},
-    {rol:"zona", zona:"Heroica", region:"Veracruz Centro", nombre:"Capitán Zona Heroica"},
-    {rol:"zona", zona:"Huauchinango", region:"Veracruz Norte", nombre:"Capitán Zona Huauchinango"},
-    {rol:"zona", zona:"Huejutla", region:"Veracruz Norte", nombre:"Capitán Zona Huejutla"},
-    {rol:"zona", zona:"Orizaba", region:"Veracruz Sur", nombre:"Capitán Zona Orizaba"},
-    {rol:"zona", zona:"Papantla", region:"Veracruz Norte", nombre:"Capitán Zona Papantla"},
-    {rol:"zona", zona:"Piñera", region:"Veracruz Sur", nombre:"Capitán Zona Piñera"},
-    {rol:"zona", zona:"Portuaria", region:"Veracruz Centro", nombre:"Capitán Zona Portuaria"},
-    {rol:"zona", zona:"Poza Rica", region:"Veracruz Norte", nombre:"Capitán Zona Poza Rica"},
-    {rol:"zona", zona:"Puerto", region:"Veracruz Sur", nombre:"Capitán Zona Puerto"},
-    {rol:"zona", zona:"Tampico Norte", region:"Veracruz Norte", nombre:"Capitán Zona Tampico Norte"},
-    {rol:"zona", zona:"Tampico Sur", region:"Veracruz Norte", nombre:"Capitán Zona Tampico Sur"},
-    {rol:"zona", zona:"Tantoyuca", region:"Veracruz Norte", nombre:"Capitán Zona Tantoyuca"},
-    {rol:"zona", zona:"Teziutlan", region:"Veracruz Centro", nombre:"Capitán Zona Teziutlan"},
-    {rol:"zona", zona:"Tuxpan", region:"Veracruz Norte", nombre:"Capitán Zona Tuxpan"},
-    {rol:"zona", zona:"Tuxtepec", region:"Veracruz Sur", nombre:"Capitán Zona Tuxtepec"},
-    {rol:"zona", zona:"Tuxtlas", region:"Veracruz Sur", nombre:"Capitán Zona Tuxtlas"},
-    {rol:"zona", zona:"Xalapa", region:"Veracruz Centro", nombre:"Capitán Zona Xalapa"}
+    {rol:"zona", zona:"Alamo", region:"Veracruz Norte", nombre:"Capitán Zona Alamo", coach:"Jhair Alberto Mejia Fontes"},
+    {rol:"zona", zona:"Alvarado", region:"Veracruz Sur", nombre:"Capitán Zona Alvarado", coach:"Peralta Dominguez Alma Delia"},
+    {rol:"zona", zona:"Boca Del Rio", region:"Veracruz Centro", nombre:"Capitán Zona Boca Del Rio", coach:"Romero Estrada Arazely"},
+    {rol:"zona", zona:"Cafetalera", region:"Veracruz Sur", nombre:"Capitán Zona Cafetalera", coach:"Margarita Fabian Arroyo"},
+    {rol:"zona", zona:"Cardel", region:"Veracruz Centro", nombre:"Capitán Zona Cardel", coach:"Gamez Molinos Alejandra Monserrat"},
+    {rol:"zona", zona:"Coatepec", region:"Veracruz Centro", nombre:"Capitán Zona Coatepec", coach:"Karla Mercedes Fernandez Zavaleta"},
+    {rol:"zona", zona:"Cordoba", region:"Veracruz Sur", nombre:"Capitán Zona Cordoba", coach:"Lozano Sanchez Saul"},
+    {rol:"zona", zona:"Costa Esmeralda", region:"Veracruz Centro", nombre:"Capitán Zona Costa Esmeralda", coach:"Guevara Rodriguez Mariela"},
+    {rol:"zona", zona:"Cuenca", region:"Veracruz Sur", nombre:"Capitán Zona Cuenca", coach:"Monfil Garcia Luis Gustavo"},
+    {rol:"zona", zona:"Gutierrez Zamora", region:"Veracruz Norte", nombre:"Capitán Zona Gutierrez Zamora", coach:"Guerrero Ferman Santos Javier"},
+    {rol:"zona", zona:"Heroica", region:"Veracruz Centro", nombre:"Capitán Zona Heroica", coach:"Liliana Sandoval Guevara"},
+    {rol:"zona", zona:"Huauchinango", region:"Veracruz Norte", nombre:"Capitán Zona Huauchinango", coach:"Salvador Marquez Pozos"},
+    {rol:"zona", zona:"Huejutla", region:"Veracruz Norte", nombre:"Capitán Zona Huejutla", coach:"Salguero Flores Rubisel"},
+    {rol:"zona", zona:"Orizaba", region:"Veracruz Sur", nombre:"Capitán Zona Orizaba", coach:"María De La Cruz Martínez Utrera"},
+    {rol:"zona", zona:"Papantla", region:"Veracruz Norte", nombre:"Capitán Zona Papantla", coach:"Jorge Del Angel Jimenez"},
+    {rol:"zona", zona:"Piñera", region:"Veracruz Sur", nombre:"Capitán Zona Piñera", coach:"Vanessa Sanchez Basulto"},
+    {rol:"zona", zona:"Portuaria", region:"Veracruz Centro", nombre:"Capitán Zona Portuaria", coach:"Adolfo Angel Ayala Azuara"},
+    {rol:"zona", zona:"Poza Rica", region:"Veracruz Norte", nombre:"Capitán Zona Poza Rica", coach:"Hernandez Santes Carolina"},
+    {rol:"zona", zona:"Puerto", region:"Veracruz Sur", nombre:"Capitán Zona Puerto", coach:"Sandoval Garcia Guadalupe"},
+    {rol:"zona", zona:"Tampico Norte", region:"Veracruz Norte", nombre:"Capitán Zona Tampico Norte", coach:"Flores Trejo Abundio"},
+    {rol:"zona", zona:"Tampico Sur", region:"Veracruz Norte", nombre:"Capitán Zona Tampico Sur", coach:"Ignacio Arcos Pérez"},
+    {rol:"zona", zona:"Tantoyuca", region:"Veracruz Norte", nombre:"Capitán Zona Tantoyuca", coach:"Flores Aguilar Rafael"},
+    {rol:"zona", zona:"Teziutlan", region:"Veracruz Centro", nombre:"Capitán Zona Teziutlan", coach:"Mota Retureta Lauro Omar"},
+    {rol:"zona", zona:"Tuxpan", region:"Veracruz Norte", nombre:"Capitán Zona Tuxpan", coach:"Fernando García Hernández"},
+    {rol:"zona", zona:"Tuxtepec", region:"Veracruz Sur", nombre:"Capitán Zona Tuxtepec", coach:"Ruben Guizar Aguirre"},
+    {rol:"zona", zona:"Tuxtlas", region:"Veracruz Sur", nombre:"Capitán Zona Tuxtlas", coach:"Hernandez Hernandez David"},
+    {rol:"zona", zona:"Xalapa", region:"Veracruz Centro", nombre:"Capitán Zona Xalapa", coach:"Velasco Bello Luis Enrique"}
   ];
 </script>
 
@@ -158,8 +161,11 @@
 <div id="loading" class="loading hidden"><div class="spin"></div></div>
 
 <script>
-const state = { user:null, tiendas:[], estado:{}, pending:{}, fecha:hoy(), adminTab:'reporte', adminRegion:'TODAS' };
+const state = { user:null, tiendas:[], estado:{}, pending:{}, fecha:hoy(), adminTab:'reporte', adminRegion:'TODAS', reportMode:'dia', fechaInicio:lunesActual(), fechaFin:hoy(), rangoEstado:{}, rangoDias:1, semanaActual:lunesActual(), coachEstado:{} };
 function hoy(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function lunesActual(){const d=new Date();const diff=(d.getDay()+6)%7;d.setDate(d.getDate()-diff);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function sumaDias(f,n){const d=new Date(f+'T00:00:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtCorto(f){const [y,m,d]=f.split('-');const me=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return parseInt(d)+' '+me[(+m)-1];}
 function fmtFecha(f){const [y,m,d]=f.split('-');const me=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return d+' '+me[(+m)-1]+' '+y;}
 const $=id=>document.getElementById(id);
 function showLoad(v){$('loading').classList.toggle('hidden',!v);}
@@ -243,9 +249,10 @@ $('btnSalir').onclick=()=>location.reload();
 async function cargarTiendas(zona){const r=await api({action:'tiendas',zona:zona||''});state.tiendas=r.ok?r.tiendas:[];}
 async function cargarEstado(){const r=await api({action:'estado',fecha:state.fecha});state.estado=r.ok?r.estado:{};}
 async function cargarPanel(zona){
-  const r=await api({action:'panel',zona:zona||'',fecha:state.fecha});
+  const r=await api({action:'panel',zona:zona||'',fecha:state.fecha,semana:state.semanaActual});
   state.tiendas=r.ok?r.tiendas:[];
   state.estado=r.ok?r.estado:{};
+  state.coachEstado=r.ok&&r.coach?r.coach:{};
 }
 function estOf(eco){return state.estado[eco]||{mat_cic:'NO',mat_man:'NO',ves_cic:'NO',ves_man:'NO'};}
 
@@ -277,7 +284,8 @@ function renderZona(){
       +'<div class="metric"><div class="n">'+matOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Matutino cumplido</div></div>'
       +'<div class="metric"><div class="n">'+vesOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Vespertino cumplido</div></div>'
       +'<div class="metric"><div class="n" style="font-size:16px">'+pct+'%</div><div class="l">Avance del día</div></div>'
-    +'</div>';
+    +'</div>'
+    +coachCardHTML(state.user.zona);
   if(!t.length){html+='<div class="empty">No hay tiendas activas en tu zona.</div>';$('content').innerHTML=html;return;}
   t.forEach(x=>{
     const e=estOf(x.eco);
@@ -287,6 +295,38 @@ function renderZona(){
       +'<div class="turno"><span class="lbl">Vespertino</span>'+tgBtn(x,'ves_cic','Cíclico')+tgBtn(x,'ves_man','Manual')+'</div></div>';
   });
   $('content').innerHTML=html;
+}
+
+/* ---- Tarjeta semanal del coach (Cíclicos / Conteos) — usada tanto en la
+   vista del capitán como en el detalle de zona del administrador ---- */
+function coachOf(zona){
+  const u=USERS.find(x=>x.rol==='zona'&&x.zona===zona);
+  return u?u.coach:'';
+}
+function coachCardHTML(zona){
+  const coach=coachOf(zona);
+  const c=state.coachEstado[zona]||{ciclico:'NO',manual:'NO'};
+  const lunes=state.semanaActual, domingo=sumaDias(lunes,6);
+  const btn=(campo,label,val)=>{
+    if(val==='SI')return '<div class="tg on locked">'+label+'<span class="t">✓ registrado</span></div>';
+    return '<button class="tg" onclick="coachToggle(\''+zona+'\',\''+campo+'\')">'+label+'<span class="t">pendiente</span></button>';
+  };
+  return '<div class="card coach-card"><div class="h"><div><span class="eco" style="background:var(--orange)">COACH</span><div class="nom">'+coach+'</div><div class="coach-week">Semana del '+fmtCorto(lunes)+' al '+fmtCorto(domingo)+'</div></div></div>'
+    +'<div class="coach-buttons">'+btn('ciclico','Cíclicos',c.ciclico)+btn('manual','Conteos',c.manual)+'</div></div>';
+}
+async function coachToggle(zona,campo){
+  if(!state.coachEstado[zona])state.coachEstado[zona]={ciclico:'NO',manual:'NO'};
+  if(state.coachEstado[zona][campo]==='SI')return;
+  state.coachEstado[zona][campo]='SI';
+  if(state.user.rol==='zona')renderZona(); else renderAdmin();
+  try{
+    const r=await api({action:'coachMarcar',semana:state.semanaActual,zona:zona,campo:campo,valor:'SI',coach:coachOf(zona),usuario:state.user.nombre});
+    if(!r.ok)throw new Error(r.error||'No se pudo guardar');
+  }catch(e){
+    state.coachEstado[zona][campo]='NO';
+    alert('No se guardó: '+e.message);
+    if(state.user.rol==='zona')renderZona(); else renderAdmin();
+  }
 }
 
 /* ---- Selección local (sin llamada a red) + guardado en lote ---- */
@@ -368,9 +408,21 @@ function renderAdmin(){
   let html='<div class="tabs"><div class="tab '+(state.adminTab==='reporte'?'on':'')+'" onclick="setTab(\'reporte\')">Reporte</div><div class="tab '+(state.adminTab==='tiendas'?'on':'')+'" onclick="setTab(\'tiendas\')">Tiendas</div></div>';
   if(state.adminTab==='tiendas'){
     html+='<div class="bar">'+regiones.map(r=>'<span class="chip region-chip '+(state.adminRegion===r?'on':'')+'" onclick="setRegion(\''+r+'\')">'+(r==='TODAS'?'Todas las regiones':r)+'</span>').join('')+'</div>';
+    html+='<div class="bar"><span class="chip">Compañía <b>Veracruz</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
+  } else {
+    html+='<div class="bar"><span class="chip region-chip '+(state.reportMode==='dia'?'on':'')+'" onclick="setReportMode(\'dia\')">Día</span><span class="chip region-chip '+(state.reportMode==='rango'?'on':'')+'" onclick="setReportMode(\'rango\')">Rango de fechas</span></div>';
+    if(state.reportMode==='dia'){
+      html+='<div class="bar"><span class="chip">Compañía <b>Veracruz</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
+    } else {
+      html+='<div class="bar">'
+        +'<span class="chip">Desde <input class="date" style="border:none;padding:0;background:transparent" type="date" value="'+state.fechaInicio+'" onchange="cambiarFechaInicio(this.value)"></span>'
+        +'<span class="chip">Hasta <input class="date" style="border:none;padding:0;background:transparent" type="date" value="'+state.fechaFin+'" onchange="cambiarFechaFin(this.value)"></span>'
+        +'<button class="refresh" onclick="setEstaSemana()">Esta semana</button>'
+        +'<button class="refresh" onclick="aplicarRango()">Ver avance</button>'
+      +'</div>';
+    }
   }
-  html+='<div class="bar"><span class="chip">Compañía <b>Veracruz</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
-  html+=state.adminTab==='reporte'?reporteHTML():tiendasHTML();
+  html+=state.adminTab==='tiendas'?tiendasHTML():(state.reportMode==='rango'?rangoHTML():reporteHTML());
   $('content').innerHTML=html;
 }
 function setTab(t){state.adminTab=t;renderAdmin();}
@@ -379,6 +431,67 @@ async function cambiarFecha(f){state.fecha=f;await recargarAdmin();}
 function cumplioTurno(e,turno){return turno==='mat'?(e.mat_cic==='SI'&&e.mat_man==='SI'):(e.ves_cic==='SI'&&e.ves_man==='SI');}
 function tiendasFiltradas(){return state.adminRegion==='TODAS'?state.tiendas:state.tiendas.filter(x=>x.region===state.adminRegion);}
 function agruparPorZona(t){const g={};(t||state.tiendas).forEach(x=>{(g[x.zona]=g[x.zona]||[]).push(x);});return g;}
+
+/* ---- Reporte por rango de fechas (semana, mes o el periodo que elijas) ---- */
+function setReportMode(m){
+  state.reportMode=m;
+  renderAdmin();
+  if(m==='rango' && Object.keys(state.rangoEstado).length===0) aplicarRango();
+}
+function cambiarFechaInicio(v){state.fechaInicio=v;}
+function cambiarFechaFin(v){state.fechaFin=v;}
+function setEstaSemana(){state.fechaInicio=lunesActual();state.fechaFin=hoy();aplicarRango();}
+async function cargarRango(){
+  const r=await api({action:'estadoRango',fechaInicio:state.fechaInicio,fechaFin:state.fechaFin});
+  state.rangoEstado=r.ok?r.estado:{};
+  state.rangoDias=r.ok?r.numDias:1;
+}
+async function aplicarRango(){
+  if(!state.fechaInicio||!state.fechaFin){alert('Selecciona ambas fechas.');return;}
+  if(state.fechaInicio>state.fechaFin){alert('La fecha "Desde" no puede ser posterior a "Hasta".');return;}
+  showLoad(true);
+  try{await cargarRango();renderAdmin();}
+  catch(e){alert('No se pudo cargar el rango: '+e.message);}
+  finally{showLoad(false);}
+}
+function countsOf(eco){return state.rangoEstado[eco]||{mc:0,mm:0,vc:0,vm:0};}
+function rangoHTML(){
+  const t=tiendasFiltradas();
+  const nd=state.rangoDias||1;
+  if(!t.length)return '<div class="empty">No hay tiendas activas en esta selección.</div>';
+  let mcT=0,mmT=0,vcT=0,vmT=0;
+  t.forEach(x=>{const c=countsOf(x.eco);mcT+=c.mc;mmT+=c.mm;vcT+=c.vc;vmT+=c.vm;});
+  const n=t.length,tot=n*nd;
+  const pct=v=>tot?Math.round(v/tot*100):0;
+  let html='<div class="metrics">'
+    +'<div class="metric"><div class="n" style="font-size:15px">'+fmtFecha(state.fechaInicio)+' – '+fmtFecha(state.fechaFin)+'</div><div class="l">'+nd+' día'+(nd>1?'s':'')+' · '+n+' tiendas</div></div>'
+    +'<div class="metric"><div class="n">'+pct(mcT)+'%</div><div class="l">Cíclico matutino</div></div>'
+    +'<div class="metric"><div class="n">'+pct(mmT)+'%</div><div class="l">Manual matutino</div></div>'
+    +'<div class="metric"><div class="n">'+pct(vcT)+'%</div><div class="l">Cíclico vespertino</div></div>'
+    +'<div class="metric"><div class="n">'+pct(vmT)+'%</div><div class="l">Manual vespertino</div></div>'
+    +'<div class="metric"><div class="n">'+pct(mcT+mmT+vcT+vmT)+'%</div><div class="l">Avance total del periodo</div></div>'
+    +'</div>';
+  const g=agruparPorZona(t);
+  Object.keys(g).sort().forEach(zona=>{
+    const arr=g[zona];
+    let mc=0,mm=0,vc=0,vm=0;
+    arr.forEach(x=>{const c=countsOf(x.eco);mc+=c.mc;mm+=c.mm;vc+=c.vc;vm+=c.vm;});
+    const nz=arr.length,totz=nz*nd;
+    const pz=v=>totz?Math.round(v/totz*100):0;
+    const regionTag=state.adminRegion==='TODAS'?' <span class="region-tag">'+arr[0].region+'</span>':'';
+    const bar=(lbl,p)=>'<div class="zbar"><div class="cap"><span>'+lbl+'</span><span>'+p+'%</span></div><div class="track"><div class="fill" style="width:'+p+'%;background:'+(p===100?'var(--ok)':'var(--orange)')+'"></div></div></div>';
+    html+='<div class="zblock"><div class="zhead" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">'
+      +'<div><div class="zn">'+zona+regionTag+'</div><div class="sup">'+nz+' tiendas · '+nd+' día'+(nd>1?'s':'')+'</div></div>'
+      +'<div class="zbars">'+bar('Mat Cíc',pz(mc))+bar('Mat Man',pz(mm))+bar('Ves Cíc',pz(vc))+bar('Ves Man',pz(vm))+'</div></div>'
+      +'<div class="hidden">'+coachCardHTML(zona)+'<table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Ves Cíc</th><th>Ves Man</th></tr></thead><tbody>';
+    arr.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(x=>{
+      const c=countsOf(x.eco);
+      html+='<tr><td class="nom">'+x.nombre+'<br><span class="eco">ECO '+x.eco+'</span></td><td>'+c.mc+'/'+nd+'</td><td>'+c.mm+'/'+nd+'</td><td>'+c.vc+'/'+nd+'</td><td>'+c.vm+'/'+nd+'</td></tr>';
+    });
+    html+='</tbody><tfoot><tr class="tot"><td class="nom">Total</td><td>'+mc+'/'+totz+'</td><td>'+mm+'/'+totz+'</td><td>'+vc+'/'+totz+'</td><td>'+vm+'/'+totz+'</td></tr></tfoot></table></div></div>';
+  });
+  return html;
+}
 
 /* ---- Panel principal del Reporte: 1 tarjeta por región ---- */
 function statsDe(arr){
@@ -445,7 +558,7 @@ function reporteHTML(){
     html+='<div class="zblock"><div class="zhead" onclick="this.nextElementSibling.classList.toggle(\'hidden\')">'
       +'<div><div class="zn">'+zona+regionTag+' '+((m===arr.length&&v===arr.length)?'<span class="cumplio">Al día</span>':'')+'</div><div class="sup">'+n+' tiendas · '+c+'/'+n+' cumplidas</div></div>'
       +'<div class="zbars">'+bar('Mat Cíc',pMc)+bar('Mat Man',pMm)+bar('Ves Cíc',pVc)+bar('Ves Man',pVm)+'</div></div>'
-      +'<div class="hidden"><table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Mat</th><th>Ves Cíc</th><th>Ves Man</th><th>Ves</th></tr></thead><tbody>';
+      +'<div class="hidden">'+coachCardHTML(zona)+'<table><thead><tr><th style="text-align:left">Tienda</th><th>Mat Cíc</th><th>Mat Man</th><th>Mat</th><th>Ves Cíc</th><th>Ves Man</th><th>Ves</th></tr></thead><tbody>';
     arr.sort((a,b)=>a.nombre.localeCompare(b.nombre)).forEach(x=>{
       const e=estOf(x.eco);
       const mk=vv=>vv==='SI'?'<span class="yes">✓</span>':'<span class="no">–</span>';
