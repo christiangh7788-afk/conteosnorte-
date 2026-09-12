@@ -22,6 +22,14 @@
   .login select{width:100%;padding:13px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:#fff;color:#0f172a}
   .login select:focus{outline:none;border-color:var(--navy2)}
   .login button{width:100%;margin-top:18px;background:var(--orange);color:#fff;border:none;padding:13px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer}
+  .region-select{display:flex;flex-direction:column;gap:10px}
+  .region-btn{width:100%;background:#f8fafc;border:1px solid var(--line);color:var(--navy);padding:14px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;margin-top:0}
+  .region-btn:active{background:#eef2f7}
+  .region-btn .rb-sub{font-size:11px;font-weight:600;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+  .login-divider{text-align:center;font-size:11px;color:var(--muted);margin:14px 0;position:relative}
+  .login-divider::before,.login-divider::after{content:"";position:absolute;top:50%;width:38%;height:1px;background:var(--line)}
+  .login-divider::before{left:0}.login-divider::after{right:0}
+  .admin-btn{width:100%;background:var(--navy);color:#fff;border:none;padding:13px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-top:0}
   .err{color:var(--danger);font-size:13px;margin-top:12px;text-align:center;min-height:16px}
   .wrap{max-width:900px;margin:0 auto;padding:14px}
   .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
@@ -132,19 +140,14 @@
 
 <div id="loginView" class="login-wrap">
   <div class="login">
-    <div class="head"><h1>Conteos Cíclicos</h1><p>Región Veracruz Norte</p></div>
-    <div class="body">
-      <label>Selecciona tu usuario</label>
-      <select id="selUser"></select>
-      <button id="btnLogin">Entrar</button>
-      <div id="loginErr" class="err"></div>
-    </div>
+    <div class="head"><h1>Conteos Cíclicos</h1><p id="loginSub">Compañía Veracruz</p></div>
+    <div class="body" id="loginBody"></div>
   </div>
 </div>
 
 <div id="appView" class="hidden">
   <div class="top">
-    <div><div class="brand">Conteos Cíclicos</div><div class="sub">Veracruz Norte</div></div>
+    <div><div class="brand">Conteos Cíclicos</div><div class="sub">Compañía Veracruz</div></div>
     <div class="spacer"></div>
     <div class="who" id="who"></div>
     <button class="btn-out" id="btnSalir">Salir</button>
@@ -176,13 +179,61 @@ function api(params){
   });
 }
 
-(function initLogin(){
-  const sel=$('selUser');
-  USERS.forEach((u,i)=>{const o=document.createElement('option');o.value=i;o.textContent=u.nombre;sel.appendChild(o);});
-})();
-$('btnLogin').onclick=doLogin;
-async function doLogin(){
-  const i=+$('selUser').value; state.user=USERS[i];
+/* ---------------- Login en dos pasos: región -> capitán ---------------- */
+const REGIONES_LOGIN=['Veracruz Norte','Veracruz Centro','Veracruz Sur'];
+renderLoginRegiones();
+
+function renderLoginRegiones(){
+  $('loginSub').textContent='Selecciona tu tablero';
+  let html='<div class="region-select">';
+  REGIONES_LOGIN.forEach(r=>{
+    const n=USERS.filter(u=>u.rol==='zona'&&u.region===r).length;
+    html+='<button class="region-btn" onclick="renderLoginCapitanes(\''+r+'\')">'+r+'<span class="rb-sub">'+n+' zonas</span></button>';
+  });
+  html+='</div><div class="login-divider">o bien</div><button class="admin-btn" onclick="renderLoginAdminPass()">Administrador</button><div id="loginErr" class="err"></div>';
+  $('loginBody').innerHTML=html;
+}
+function renderLoginCapitanes(region){
+  $('loginSub').textContent=region;
+  const capitanes=USERS.filter(u=>u.rol==='zona'&&u.region===region).sort((a,b)=>a.zona.localeCompare(b.zona));
+  let html='<div class="back-link" onclick="renderLoginRegiones()">← Cambiar región</div>'
+    +'<label>Selecciona tu zona</label><select id="selUser">'
+    +capitanes.map(u=>'<option value="'+u.zona+'">'+u.nombre+'</option>').join('')
+    +'</select><button id="btnLogin" onclick="entrarComoCapitan()">Entrar</button><div id="loginErr" class="err"></div>';
+  $('loginBody').innerHTML=html;
+}
+const ADMIN_PASSWORD='ver-26';
+function renderLoginAdminPass(){
+  $('loginSub').textContent='Administrador';
+  let html='<div class="back-link" onclick="renderLoginRegiones()">← Volver</div>'
+    +'<label>Contraseña de administrador</label>'
+    +'<input type="password" id="adminPass" placeholder="••••••" autocomplete="off">'
+    +'<button id="btnAdminLogin" onclick="verificarAdminPass()">Entrar</button>'
+    +'<div id="loginErr" class="err"></div>';
+  $('loginBody').innerHTML=html;
+  $('adminPass').focus();
+  $('adminPass').addEventListener('keydown',e=>{ if(e.key==='Enter') verificarAdminPass(); });
+}
+function verificarAdminPass(){
+  const val=$('adminPass').value.trim();
+  if(val.toLowerCase()===ADMIN_PASSWORD.toLowerCase()){
+    entrarComoAdmin();
+  } else {
+    $('loginErr').textContent='Contraseña incorrecta';
+    $('adminPass').value='';
+    $('adminPass').focus();
+  }
+}
+async function entrarComoAdmin(){
+  state.user=USERS.find(u=>u.rol==='admin');
+  await procederLogin();
+}
+async function entrarComoCapitan(){
+  const zona=$('selUser').value;
+  state.user=USERS.find(u=>u.rol==='zona'&&u.zona===zona);
+  await procederLogin();
+}
+async function procederLogin(){
   $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden');
   $('who').innerHTML=state.user.nombre+'<br>'+(state.user.rol==='admin'?'Administrador':('Zona '+state.user.zona));
   if(state.user.rol==='admin') await entrarAdmin(); else await entrarZona();
