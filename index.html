@@ -29,6 +29,16 @@
   .region-chip{cursor:pointer;font-weight:600;user-select:none}
   .region-chip.on{background:var(--navy);border-color:var(--navy);color:#fff}
   .region-tag{font-size:10px;font-weight:600;color:var(--teal);background:#e6fbf9;border-radius:6px;padding:2px 6px;vertical-align:middle}
+  .region-cards{display:flex;flex-direction:column;gap:12px;margin-bottom:14px}
+  .region-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;transition:.12s}
+  .region-card:active{transform:scale(.98)}
+  .rc-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+  .rc-name{font-size:17px;font-weight:800;color:var(--navy)}
+  .rc-sub{font-size:12px;color:var(--muted);margin-top:2px}
+  .rc-n{font-size:26px;font-weight:800;color:var(--navy);white-space:nowrap}
+  .rc-bars{display:flex;gap:16px;margin-bottom:12px}
+  .rc-cta{font-size:12px;font-weight:700;color:var(--teal);text-align:right}
+  .back-link{font-size:12px;color:var(--navy);font-weight:700;cursor:pointer;margin-bottom:10px;display:inline-block}
   .date{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:14px}
   .savebar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;border-radius:10px;padding:9px 12px;margin-bottom:12px;font-size:12px;font-weight:600}
   .savebar.busy{background:#f8fafc;border-color:var(--line);color:var(--muted)}
@@ -299,9 +309,11 @@ async function entrarAdmin(){
 async function recargarAdmin(){showLoad(true);try{await cargarEstado();renderAdmin();}finally{showLoad(false);}}
 function renderAdmin(){
   const regiones=['TODAS','Veracruz Norte','Veracruz Centro','Veracruz Sur'];
-  let html='<div class="tabs"><div class="tab '+(state.adminTab==='reporte'?'on':'')+'" onclick="setTab(\'reporte\')">Reporte</div><div class="tab '+(state.adminTab==='tiendas'?'on':'')+'" onclick="setTab(\'tiendas\')">Tiendas</div></div>'
-    +'<div class="bar">'+regiones.map(r=>'<span class="chip region-chip '+(state.adminRegion===r?'on':'')+'" onclick="setRegion(\''+r+'\')">'+(r==='TODAS'?'Todas las regiones':r)+'</span>').join('')+'</div>'
-    +'<div class="bar"><span class="chip">Compañía <b>Veracruz</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
+  let html='<div class="tabs"><div class="tab '+(state.adminTab==='reporte'?'on':'')+'" onclick="setTab(\'reporte\')">Reporte</div><div class="tab '+(state.adminTab==='tiendas'?'on':'')+'" onclick="setTab(\'tiendas\')">Tiendas</div></div>';
+  if(state.adminTab==='tiendas'){
+    html+='<div class="bar">'+regiones.map(r=>'<span class="chip region-chip '+(state.adminRegion===r?'on':'')+'" onclick="setRegion(\''+r+'\')">'+(r==='TODAS'?'Todas las regiones':r)+'</span>').join('')+'</div>';
+  }
+  html+='<div class="bar"><span class="chip">Compañía <b>Veracruz</b></span><input class="date" type="date" value="'+state.fecha+'" onchange="cambiarFecha(this.value)"><button class="refresh" onclick="recargarAdmin()">&#8635; Actualizar</button></div>';
   html+=state.adminTab==='reporte'?reporteHTML():tiendasHTML();
   $('content').innerHTML=html;
 }
@@ -311,11 +323,49 @@ async function cambiarFecha(f){state.fecha=f;await recargarAdmin();}
 function cumplioTurno(e,turno){return turno==='mat'?(e.mat_cic==='SI'&&e.mat_man==='SI'):(e.ves_cic==='SI'&&e.ves_man==='SI');}
 function tiendasFiltradas(){return state.adminRegion==='TODAS'?state.tiendas:state.tiendas.filter(x=>x.region===state.adminRegion);}
 function agruparPorZona(t){const g={};(t||state.tiendas).forEach(x=>{(g[x.zona]=g[x.zona]||[]).push(x);});return g;}
+
+/* ---- Panel principal del Reporte: 1 tarjeta por región ---- */
+function statsDe(arr){
+  let m=0,v=0,c=0;
+  arr.forEach(x=>{
+    const e=estOf(x.eco);
+    if(cumplioTurno(e,'mat'))m++;
+    if(cumplioTurno(e,'ves'))v++;
+    if(e.mat_cic==='SI'&&e.mat_man==='SI'&&e.ves_cic==='SI'&&e.ves_man==='SI')c++;
+  });
+  const n=arr.length;
+  return {n,m,v,c,pm:n?Math.round(m/n*100):0,pv:n?Math.round(v/n*100):0};
+}
+function regionCardsHTML(){
+  const regiones=['Veracruz Norte','Veracruz Centro','Veracruz Sur'];
+  const t=state.tiendas;
+  let html='<div class="metrics"><div class="metric"><div class="n">'+t.length+'</div><div class="l">Tiendas activas (Compañía)</div></div>'
+    +'<div class="metric"><div class="n" style="font-size:16px">'+fmtFecha(state.fecha)+'</div><div class="l">Fecha del reporte</div></div></div>'
+    +'<div class="region-cards">';
+  regiones.forEach(reg=>{
+    const arr=t.filter(x=>x.region===reg);
+    const s=statsDe(arr);
+    const zonasN=new Set(arr.map(x=>x.zona)).size;
+    const alDia = s.n>0 && s.m===s.n && s.v===s.n;
+    html+='<div class="region-card" onclick="setRegion(\''+reg+'\')">'
+      +'<div class="rc-head"><div><div class="rc-name">'+reg+' '+(alDia?'<span class="cumplio">Al día</span>':'')+'</div><div class="rc-sub">'+s.n+' tiendas · '+zonasN+' zonas</div></div><div class="rc-n">'+s.c+'<span style="font-size:13px;color:var(--muted)">/'+s.n+'</span></div></div>'
+      +'<div class="rc-bars">'
+        +'<div class="zbar" style="width:auto;flex:1"><div class="cap"><span>Matutino</span><span>'+s.pm+'%</span></div><div class="track"><div class="fill" style="width:'+s.pm+'%;background:'+(s.pm===100?'var(--ok)':'var(--orange)')+'"></div></div></div>'
+        +'<div class="zbar" style="width:auto;flex:1"><div class="cap"><span>Vespertino</span><span>'+s.pv+'%</span></div><div class="track"><div class="fill" style="width:'+s.pv+'%;background:'+(s.pv===100?'var(--ok)':'var(--orange)')+'"></div></div></div>'
+      +'</div>'
+      +'<div class="rc-cta">Ver zonas de '+reg+' →</div>'
+    +'</div>';
+  });
+  html+='</div>';
+  return html;
+}
 function reporteHTML(){
+  if(state.adminRegion==='TODAS') return regionCardsHTML();
   const t=tiendasFiltradas();let matOk=0,vesOk=0;
   t.forEach(x=>{const e=estOf(x.eco);if(cumplioTurno(e,'mat'))matOk++;if(cumplioTurno(e,'ves'))vesOk++;});
   const pMat=t.length?Math.round(matOk/t.length*100):0,pVes=t.length?Math.round(vesOk/t.length*100):0;
-  let html='<div class="metrics"><div class="metric"><div class="n">'+t.length+'</div><div class="l">Tiendas activas</div></div>'
+  let html='<div class="back-link" onclick="setRegion(\'TODAS\')">← Todas las regiones</div>'
+    +'<div class="metrics"><div class="metric"><div class="n">'+t.length+'</div><div class="l">Tiendas activas</div></div>'
     +'<div class="metric"><div class="n">'+matOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Matutino cumplido ('+pMat+'%)</div></div>'
     +'<div class="metric"><div class="n">'+vesOk+'<span style="font-size:14px;color:var(--muted)">/'+t.length+'</span></div><div class="l">Vespertino cumplido ('+pVes+'%)</div></div>'
     +'<div class="metric"><div class="n" style="font-size:16px">'+fmtFecha(state.fecha)+'</div><div class="l">Fecha del reporte</div></div></div>';
