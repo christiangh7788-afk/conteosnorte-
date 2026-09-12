@@ -242,11 +242,16 @@ $('btnSalir').onclick=()=>location.reload();
 
 async function cargarTiendas(zona){const r=await api({action:'tiendas',zona:zona||''});state.tiendas=r.ok?r.tiendas:[];}
 async function cargarEstado(){const r=await api({action:'estado',fecha:state.fecha});state.estado=r.ok?r.estado:{};}
+async function cargarPanel(zona){
+  const r=await api({action:'panel',zona:zona||'',fecha:state.fecha});
+  state.tiendas=r.ok?r.tiendas:[];
+  state.estado=r.ok?r.estado:{};
+}
 function estOf(eco){return state.estado[eco]||{mat_cic:'NO',mat_man:'NO',ves_cic:'NO',ves_man:'NO'};}
 
 async function entrarZona(){
   showLoad(true);
-  try{await cargarTiendas(state.user.zona);await cargarEstado();renderZona();}
+  try{await cargarPanel(state.user.zona);renderZona();}
   catch(e){$('content').innerHTML='<div class="empty">'+e.message+'</div>';}
   finally{showLoad(false);}
 }
@@ -353,7 +358,7 @@ async function confirmarGuardado(){
 
 async function entrarAdmin(){
   showLoad(true);
-  try{await cargarTiendas('');await cargarEstado();renderAdmin();}
+  try{await cargarPanel('');renderAdmin();}
   catch(e){$('content').innerHTML='<div class="empty">'+e.message+'</div>';}
   finally{showLoad(false);}
 }
